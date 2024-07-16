@@ -3,7 +3,9 @@
 
 import { sql } from "drizzle-orm";
 import {
+  boolean,
   index,
+  integer,
   pgTableCreator,
   serial,
   timestamp,
@@ -18,19 +20,23 @@ import {
  */
 export const createTable = pgTableCreator((name) => `deep-work-nextjs_${name}`);
 
-export const posts = createTable(
-  "post",
+//session table for storing the users deep work sessions which are between 1-4 hours long which will be a countdown timer in seconds
+
+export const sessions = createTable(
+  "session",
   {
     id: serial("id").primaryKey(),
-    name: varchar("name", { length: 256 }),
-    createdAt: timestamp("created_at", { withTimezone: true })
+    name: varchar("name", { length: 256 }).notNull(),
+    durationInSeconds: integer("duration_in_seconds").notNull(),
+    isCompleted: boolean("is_completed").default(false).notNull(),
+    createdAt: timestamp("created_at")
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
-    updatedAt: timestamp("updated_at", { withTimezone: true }).$onUpdate(
-      () => new Date()
-    ),
+    updatedAt: timestamp("updated_at")
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
   },
   (example) => ({
-    nameIndex: index("name_idx").on(example.name),
-  })
+    sessionIndex: index("session").on(example.id),
+  }),
 );
